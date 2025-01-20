@@ -52,7 +52,7 @@ public class Robot extends TimedRobot {
 
   private double finalpose;
   private boolean a;
-  private double xToAngle, yToAngle;
+  private double xToAngle, yToAngle, turnSpeed;
 
   @Override
   public void robotInit() {
@@ -62,9 +62,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-
-    setPowerSpeed();
     a = j1.getRawButton(1);
+    turnSpeed = j1.getRawAxis(2);
     finalpose = j1.getPOV();
 
     if (finalpose == 0)
@@ -72,8 +71,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("finalpose", finalpose);
 
-    pov();
-
+    if(Math.abs(turnSpeed) <= 0.1) translade();
+    else turnIn(turnSpeed);
   }
 
   public double getCANcoderDegrees(double pose) {
@@ -86,7 +85,7 @@ public class Robot extends TimedRobot {
     return degrees;
   }
 
-  public void pov() {
+  public void translade() {
 
     SmartDashboard.putNumber("finalpose", finalpose / 360);
 
@@ -119,24 +118,20 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void setPowerSpeed() {
+  public void turnIn(double power){
+    SwerveWheel[] wheels = {
+      frontLeftSwerveWheel,backLeftSwerveWheel,frontRightSwerveWheel,backRightSwerveWheel
+    };
 
-    if (a) {
-      motorLeftBackSpeed.set(-0.2);
-      motorLeftFrontSpeed.set(0.2);
-      motorRightBackSpeed.set(-0.2);
-      motorRightFrontSpeed.set(0.2);
-      
-    }
+    
+    wheels[0].setDirection(Units.degreesToRotations(45));
+    wheels[1].setDirection(Units.degreesToRotations(135));
+    wheels[2].setDirection(Units.degreesToRotations(225));
+    wheels[3].setDirection(Units.degreesToRotations(315));
 
-    else {
-
-      motorLeftBackSpeed.stopMotor();
-      motorLeftFrontSpeed.stopMotor();
-      motorRightBackSpeed.stopMotor();
-      motorRightFrontSpeed.stopMotor();
+    for (int i = 0; i < wheels.length; i++) {
+      wheels[i].setSpeed(power, true);;
     }
   }
+
 }
-
-
