@@ -6,11 +6,12 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public final class Constants {
+public class Constants {
 
   // Operator Constants
-  public static class OperatorConstants {
+  public static final class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
 
@@ -52,14 +53,14 @@ public final class Constants {
 
   // CANCoder IDs
   public static final int CANCODER_FRONT_LEFT = 11;
-  public static final int CANCODER_FRONT_RIGHT = 12;
-  public static final int CANCODER_BACK_LEFT = 13;
+  public static final int CANCODER_FRONT_RIGHT = 13;
+  public static final int CANCODER_BACK_LEFT = 12;
   public static final int CANCODER_BACK_RIGHT = 14;
 
   // PID Constants for Swerve
-  public static final double KP_Swerve_ANGLE = 0.0002;
-  public static final double KI_Swerve_ANGLE = 0.0000001;
-  public static final double KD_Swerve_ANGLE = 0.0;
+  public static double KP_Swerve_ANGLE = 1;
+  public static double KI_Swerve_ANGLE = 0.005;
+  public static double KD_Swerve_ANGLE = 0.0;
 
   // Joystick Button Mapping
   public static final int LEFT_STICK_Y = 1;
