@@ -53,7 +53,6 @@ public class Robot extends TimedRobot {
   private double finalpose;
   private boolean a;
   private double xToAngle, yToAngle;
-  private double actualpose1, actualpose2, actualpose3, actualpose4;
 
   @Override
   public void robotInit() {
@@ -63,11 +62,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-
-    actualpose1 = getCANcoderDegrees(encoder1.getPosition().getValueAsDouble());
-    actualpose2 = getCANcoderDegrees(encoder2.getPosition().getValueAsDouble());
-    actualpose3 = getCANcoderDegrees(encoder3.getPosition().getValueAsDouble());
-    actualpose4 = getCANcoderDegrees(encoder4.getPosition().getValueAsDouble());
 
     setPowerSpeed();
     a = j1.getRawButton(1);
@@ -105,7 +99,6 @@ public class Robot extends TimedRobot {
 
     double angle = Units.radiansToRotations(Math.atan2(xToAngle, yToAngle)+ Math.PI);
     if(Math.abs(xToAngle) <= 0.04 && Math.abs(yToAngle) <= 0.04) angle = -1;
-    //double angle = Units.radiansToRotations(Math.atan2(xToAngle, yToAngle)+ Math.PI);
 
     SmartDashboard.putNumber("Analog1 angle", angle);
 
@@ -145,4 +138,5 @@ public class Robot extends TimedRobot {
     }
   }
 }
+
 
