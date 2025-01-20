@@ -53,7 +53,6 @@ public class Robot extends TimedRobot {
   private double finalpose;
   private boolean a;
   private double xToAngle, yToAngle;
-  private double actualpose1, actualpose2, actualpose3, actualpose4;
 
   @Override
   public void robotInit() {
@@ -63,11 +62,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-
-    actualpose1 = getCANcoderDegrees(encoder1.getPosition().getValueAsDouble());
-    actualpose2 = getCANcoderDegrees(encoder2.getPosition().getValueAsDouble());
-    actualpose3 = getCANcoderDegrees(encoder3.getPosition().getValueAsDouble());
-    actualpose4 = getCANcoderDegrees(encoder4.getPosition().getValueAsDouble());
 
     setPowerSpeed();
     a = j1.getRawButton(1);
@@ -124,23 +118,5 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("actualpose" + (i + 1), actualPose);
     }
   }
-
-  public void setPowerSpeed() {
-
-    SwerveWheel[] wheels = {
-      frontLeftSwerveWheel,backLeftSwerveWheel,frontRightSwerveWheel,backRightSwerveWheel};
-
-    for (int i = 0; i < wheels.length; i++) {
-
-    if (a) {
-      wheels[i].setSpeed(0.20); 
-  }
-
-    else {
-
-      wheels[i].stopSpeed();
-    }
-  }
-}
 
 }
