@@ -58,10 +58,9 @@ public class SwerveWheel {
         return encoder.getAbsolutePosition().getValueAsDouble();
     }
 
-    public void setSpeed(double power, boolean foward){
+    public void setSpeed(double power){
         power = power * 0.25;
-        if(foward) speedDriver.set(power);
-        else speedDriver.set(-power);
+        speedDriver.set(power);
 
         if(power < 0.1){
             speedDriver.stopMotor();

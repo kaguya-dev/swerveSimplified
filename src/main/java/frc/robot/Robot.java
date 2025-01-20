@@ -112,7 +112,7 @@ public class Robot extends TimedRobot {
         wheels[i].stopDirection();
       }
 
-      wheels[i].setSpeed(j1.getRawAxis(4),true);
+      wheels[i].setSpeed(j1.getRawAxis(4));
 
       SmartDashboard.putNumber("actualpose" + (i + 1), actualPose);
     }
@@ -130,7 +130,7 @@ public class Robot extends TimedRobot {
     wheels[3].setDirection(Units.degreesToRotations(315));
 
     for (int i = 0; i < wheels.length; i++) {
-      wheels[i].setSpeed(power, true);;
+      wheels[i].setSpeed(power);
     }
   }
 
