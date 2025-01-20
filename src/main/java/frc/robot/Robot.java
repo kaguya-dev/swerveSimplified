@@ -105,7 +105,6 @@ public class Robot extends TimedRobot {
 
     double angle = Units.radiansToRotations(Math.atan2(xToAngle, yToAngle)+ Math.PI);
     if(Math.abs(xToAngle) <= 0.04 && Math.abs(yToAngle) <= 0.04) angle = -1;
-    //double angle = Units.radiansToRotations(Math.atan2(xToAngle, yToAngle)+ Math.PI);
 
     SmartDashboard.putNumber("Analog1 angle", angle);
 
