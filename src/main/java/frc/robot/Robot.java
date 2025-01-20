@@ -127,21 +127,20 @@ public class Robot extends TimedRobot {
 
   public void setPowerSpeed() {
 
+    SwerveWheel[] wheels = {
+      frontLeftSwerveWheel,backLeftSwerveWheel,frontRightSwerveWheel,backRightSwerveWheel};
+
+    for (int i = 0; i < wheels.length; i++) {
+
     if (a) {
-      motorLeftBackSpeed.set(-0.2);
-      motorLeftFrontSpeed.set(0.2);
-      motorRightBackSpeed.set(-0.2);
-      motorRightFrontSpeed.set(0.2);
-      
-    }
+      wheels[i].setSpeed(0.20); 
+  }
 
     else {
 
-      motorLeftBackSpeed.stopMotor();
-      motorLeftFrontSpeed.stopMotor();
-      motorRightBackSpeed.stopMotor();
-      motorRightFrontSpeed.stopMotor();
+      wheels[i].stopSpeed();
     }
   }
+}
 
 }
