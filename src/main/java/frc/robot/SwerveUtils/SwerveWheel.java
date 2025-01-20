@@ -37,14 +37,6 @@ public class SwerveWheel {
         directionDriver.set(0);
     }
 
-    public void setSpeed(double speed){
-        speedDriver.set(speed);
-    }
-
-    public void stopSpeed(){
-        speedDriver.stopMotor();
-    }
-
     public double closestAngle(double a, double b)
     {
             // get direction
