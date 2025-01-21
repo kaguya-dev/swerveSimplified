@@ -51,7 +51,6 @@ public class Robot extends TimedRobot {
       motorRightBackSpeed, encoder4, "4", pids);
 
   private double finalpose;
-  private boolean a;
   private double xToAngle, yToAngle, turnSpeed;
 
   @Override
@@ -62,7 +61,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    a = j1.getRawButton(1);
     turnSpeed = j1.getRawAxis(2);
     finalpose = j1.getPOV();
 
@@ -71,8 +69,10 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("finalpose", finalpose);
 
-    if(Math.abs(turnSpeed) <= 0.1) translade();
-    else turnIn(turnSpeed);
+    if (Math.abs(turnSpeed) <= 0.04)
+      translade();
+    else
+      turnIn(turnSpeed);
   }
 
   public double getCANcoderDegrees(double pose) {
@@ -90,14 +90,15 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("finalpose", finalpose / 360);
 
     SwerveWheel[] wheels = {
-      frontLeftSwerveWheel,backLeftSwerveWheel,frontRightSwerveWheel,backRightSwerveWheel
+        frontLeftSwerveWheel, backLeftSwerveWheel, frontRightSwerveWheel, backRightSwerveWheel
     };
 
     xToAngle = -j1.getRawAxis(0);
     yToAngle = j1.getRawAxis(1);
 
-    double angle = Units.radiansToRotations(Math.atan2(xToAngle, yToAngle)+ Math.PI);
-    if(Math.abs(xToAngle) <= 0.04 && Math.abs(yToAngle) <= 0.04) angle = -1;
+    double angle = Units.radiansToRotations(Math.atan2(xToAngle, yToAngle) + Math.PI);
+    if (Math.abs(xToAngle) <= 0.04 && Math.abs(yToAngle) <= 0.04)
+      angle = -1;
 
     SmartDashboard.putNumber("Analog1 angle", angle);
 
@@ -112,25 +113,24 @@ public class Robot extends TimedRobot {
         wheels[i].stopDirection();
       }
 
-      wheels[i].setSpeed(j1.getRawAxis(4),true);
+      wheels[i].setSpeed(j1.getRawAxis(4), true);
 
       SmartDashboard.putNumber("actualpose" + (i + 1), actualPose);
     }
   }
 
-  public void turnIn(double power){
-    SwerveWheel[] wheels = {
-      frontLeftSwerveWheel,backLeftSwerveWheel,frontRightSwerveWheel,backRightSwerveWheel
-    };
-
-    
-    wheels[0].setDirection(Units.degreesToRotations(45));
-    wheels[1].setDirection(Units.degreesToRotations(135));
-    wheels[2].setDirection(Units.degreesToRotations(225));
-    wheels[3].setDirection(Units.degreesToRotations(315));
+  public void turnIn(double power) {
+    SwerveWheel[] wheels = { frontLeftSwerveWheel, backLeftSwerveWheel,
+        backRightSwerveWheel, frontRightSwerveWheel };
+    power = Math.abs(power);
 
     for (int i = 0; i < wheels.length; i++) {
-      wheels[i].setSpeed(power, true);;
+      wheels[i].setDirection(45 + 90 * i);
+
+      if (turnSpeed > 0)
+        wheels[i].setSpeed(power, true);
+      else
+        wheels[i].setSpeed(power, false);
     }
   }
 
