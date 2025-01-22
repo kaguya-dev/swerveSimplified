@@ -60,7 +60,7 @@ public class Constants {
   // PID Constants for Swerve
   public static double KP_Swerve_ANGLE = 1;
   public static double KI_Swerve_ANGLE = 0.005;
-  public static double KD_Swerve_ANGLE = 0.08;
+  public static double KD_Swerve_ANGLE = 0.0;
 
   // Joystick Button Mapping
   public static final int LEFT_STICK_Y = 1;

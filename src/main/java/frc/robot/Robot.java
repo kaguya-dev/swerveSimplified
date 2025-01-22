@@ -10,8 +10,6 @@ import com.ctre.phoenix6.hardware.CANcoder;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -114,6 +112,7 @@ public class Robot extends TimedRobot {
       }
 
       wheels[i].setSpeed(j1.getRawAxis(4), true);
+      wheels[i].setSpeed(j1.getRawAxis(4));
 
       SmartDashboard.putNumber("actualpose" + (i + 1), actualPose);
     }
@@ -128,9 +127,10 @@ public class Robot extends TimedRobot {
       wheels[i].setDirection(45 + 90 * i);
 
       if (turnSpeed > 0)
-        wheels[i].setSpeed(power, true);
+        wheels[i].setSpeed(power);
       else
-        wheels[i].setSpeed(power, false);
+        wheels[i].setSpeed(power);
+      wheels[i].setSpeed(power);
     }
   }
 

@@ -37,14 +37,6 @@ public class SwerveWheel {
         directionDriver.set(0);
     }
 
-    public void setSpeed(double speed){
-        speedDriver.set(speed);
-    }
-
-    public void stopSpeed(){
-        speedDriver.stopMotor();
-    }
-
     public double closestAngle(double a, double b)
     {
             // get direction
@@ -66,12 +58,11 @@ public class SwerveWheel {
         return encoder.getAbsolutePosition().getValueAsDouble();
     }
 
-    public void setSpeed(double power, boolean foward){
+    public void setSpeed(double power){
         power = power * 0.25;
-        if(foward) speedDriver.set(power);
-        else speedDriver.set(-power);
+        speedDriver.set(power);
 
-        if(power < 0.1){
+        if(Math.abs(power) < 0.1){
             speedDriver.stopMotor();
         }
     }
