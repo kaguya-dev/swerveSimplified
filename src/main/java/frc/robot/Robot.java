@@ -3,10 +3,9 @@ package frc.robot;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
-
 import static edu.wpi.first.units.Units.Degrees;
-
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.controller.PIDController;
@@ -34,24 +33,21 @@ public class Robot extends TimedRobot {
   public CANcoder encoder3 = new CANcoder(Constants.CANCODER_FRONT_RIGHT);
   public CANcoder encoder4 = new CANcoder(Constants.CANCODER_BACK_RIGHT);
 
-  private final PIDController pids = new PIDController(Constants.KP_Swerve_ANGLE,
-      Constants.KI_Swerve_ANGLE, Constants.KD_Swerve_ANGLE);
+  public Pigeon2 gyro = new Pigeon2(15);
 
-  SwerveWheel frontLeftSwerveWheel = new SwerveWheel(motorLeftFrontDirection,
-      motorLeftFrontSpeed, encoder1, "1", pids);
+  private final PIDController pids = new PIDController(Constants.KP_Swerve_ANGLE, Constants.KI_Swerve_ANGLE, Constants.KD_Swerve_ANGLE);
 
-  SwerveWheel backLeftSwerveWheel = new SwerveWheel(motorLeftBackDirection,
-      motorLeftBackSpeed, encoder2, "2", pids);
+  SwerveWheel frontLeftSwerveWheel = new SwerveWheel(motorLeftFrontDirection,motorLeftFrontSpeed, encoder1, "1", pids);
+  SwerveWheel backLeftSwerveWheel = new SwerveWheel(motorLeftBackDirection, motorLeftBackSpeed, encoder2, "2", pids);
+  SwerveWheel frontRightSwerveWheel = new SwerveWheel(motorRightFrontDirection, motorRightFrontSpeed, encoder3, "3", pids);
+  SwerveWheel backRightSwerveWheel = new SwerveWheel(motorRightBackDirection, motorRightBackSpeed, encoder4, "4", pids);
 
-  SwerveWheel frontRightSwerveWheel = new SwerveWheel(motorRightFrontDirection,
-      motorRightFrontSpeed, encoder3, "3", pids);
-
-  SwerveWheel backRightSwerveWheel = new SwerveWheel(motorRightBackDirection,
-      motorRightBackSpeed, encoder4, "4", pids);
+  SwerveWheel[] wheels = { frontLeftSwerveWheel, backLeftSwerveWheel, backRightSwerveWheel, frontRightSwerveWheel };
 
   private double finalpose;
-  private double xToAngle, yToAngle, turnSpeed;
+  private double xToAngle, yToAngle, turnSpeed, l2, r2;
   private double magTranslade;
+  private double yaw,roll,pitch;
   double angleTranslade;
 
   @Override
@@ -62,60 +58,58 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    turnSpeed = j1.getRawAxis(2);
+    turnSpeed = j1.getRawAxis(4);
     finalpose = j1.getPOV();
+
+    yaw = gyro.getYaw().getValueAsDouble();
+    pitch = gyro.getPitch().getValueAsDouble();
+    roll = gyro.getRoll().getValueAsDouble();
+
 
     xToAngle = -j1.getRawAxis(0);
     yToAngle = j1.getRawAxis(1);
 
-    magTranslade = j1.getMagnitude();
+    l2 = j1.getRawAxis(2);
+    r2 = j1.getRawAxis(3);
+
+    magTranslade = Math.sqrt(Math.pow(xToAngle,2) + Math.pow(yToAngle, 2));
 
     angleTranslade = Units.radiansToRotations(Math.atan2(xToAngle, yToAngle) + Math.PI);
-    if (Math.abs(xToAngle) <= 0.08 && Math.abs(yToAngle) <= 0.08)
+    if (Math.abs(xToAngle) <= 0.05 && Math.abs(yToAngle) <= 0.05)
       angleTranslade = -1;
 
     if (finalpose == 0)
       finalpose = 360;
 
     SmartDashboard.putNumber("finalpose", finalpose);
+    SmartDashboard.putNumberArray("Angles", new double[]{yaw, pitch, roll});
 
-    if ((Math.abs(xToAngle) >= 0.08) || (Math.abs(yToAngle) >= 0.08))
+    if ((Math.abs(xToAngle) >= 0.05) || (Math.abs(yToAngle) >= 0.05))
       translade();
-    else if (Math.abs(turnSpeed) >= 0.08)
-      turnIn(turnSpeed);
-    else
+    else if (j1.getRawButton(4))
+      turnIn();
+    else{
       motorsOff();
+    }
+    speedOn();
 
   }
 
+  public void speedOn(){
+    for (int i = 0; i < wheels.length; i++)
+      wheels[i].setSpeed(r2 - l2);
+  }
+
   public void motorsOff(){
-    SwerveWheel[] wheels = { frontLeftSwerveWheel, backLeftSwerveWheel,
-      backRightSwerveWheel, frontRightSwerveWheel };
 
     for(int i = 0; i < wheels.length; i++){
       wheels[i].stopDirection();
       wheels[i].setSpeed(0);
     }
   }
-
-  public double getCANcoderDegrees(double pose) {
-
-    double degrees = ((pose + 1) % 1) * 360;
-
-    if (degrees < 0) {
-      degrees += 360;
-    }
-    return degrees;
-  }
-
   public void translade() {
 
     SmartDashboard.putNumber("finalpose", finalpose / 360);
-
-    SwerveWheel[] wheels = {
-        frontLeftSwerveWheel, backLeftSwerveWheel, frontRightSwerveWheel, backRightSwerveWheel
-    };
-
     SmartDashboard.putNumber("Analog1 angleTranslade", angleTranslade);
 
     for (int i = 0; i < wheels.length; i++) {
@@ -129,31 +123,19 @@ public class Robot extends TimedRobot {
         wheels[i].stopDirection();
       }
 
-      wheels[i].setSpeed(j1.getRawAxis(4));
-
       SmartDashboard.putNumber("actualpose" + (i + 1), actualPose);
     }
   }
 
-  public void turnIn(double power) {
-    SwerveWheel[] wheels = { frontLeftSwerveWheel, backLeftSwerveWheel,
-        backRightSwerveWheel, frontRightSwerveWheel };
-    power = Math.abs(power);
+  public void turnIn() {
 
-    for (int i = 0; i < wheels.length; i++) {
-      wheels[i].setDirection(45 + 90 * i);
-
-      if (turnSpeed > 0)
-        wheels[i].setSpeed(power);
-      else
-        wheels[i].setSpeed(power);
-      wheels[i].setSpeed(power);
-    }
+    wheels[0].setDirection(0.125);
+    wheels[1].setDirection(0.885);
+    wheels[2].setDirection(0.635);
+    wheels[3].setDirection(0.375);
   }
 
   public void translateTurn(double direction, double translatePower, double turnPower) {
-    SwerveWheel[] wheels = { frontLeftSwerveWheel, backLeftSwerveWheel,
-        backRightSwerveWheel, frontRightSwerveWheel };
 
     double turnAngle = turnPower * 45.0;
 
@@ -194,5 +176,7 @@ public class Robot extends TimedRobot {
     wheels[1].setSpeed(translatePower);
     wheels[2].setSpeed(translatePower);
     wheels[3].setSpeed(translatePower);
+
+    
   }
 }
