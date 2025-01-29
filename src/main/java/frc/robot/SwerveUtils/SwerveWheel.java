@@ -1,11 +1,11 @@
 package frc.robot.SwerveUtils;
 
-import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
@@ -66,7 +66,6 @@ public class SwerveWheel {
             speedDriver.stopMotor();
         }
     }
-
 
 
 }

@@ -9,10 +9,12 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.SwerveUtils.SwerveActions;
 import frc.robot.SwerveUtils.SwerveWheel;
 
 public class Robot extends TimedRobot {
@@ -35,20 +37,25 @@ public class Robot extends TimedRobot {
 
   public Pigeon2 gyro = new Pigeon2(15);
 
-  private final PIDController pids = new PIDController(Constants.KP_Swerve_ANGLE, Constants.KI_Swerve_ANGLE, Constants.KD_Swerve_ANGLE);
+  private final PIDController pids = new PIDController(Constants.KP_Swerve_ANGLE, Constants.KI_Swerve_ANGLE,
+      Constants.KD_Swerve_ANGLE);
 
-  SwerveWheel frontLeftSwerveWheel = new SwerveWheel(motorLeftFrontDirection,motorLeftFrontSpeed, encoder1, "1", pids);
+  SwerveWheel frontLeftSwerveWheel = new SwerveWheel(motorLeftFrontDirection, motorLeftFrontSpeed, encoder1, "1", pids);
   SwerveWheel backLeftSwerveWheel = new SwerveWheel(motorLeftBackDirection, motorLeftBackSpeed, encoder2, "2", pids);
-  SwerveWheel frontRightSwerveWheel = new SwerveWheel(motorRightFrontDirection, motorRightFrontSpeed, encoder3, "3", pids);
+  SwerveWheel frontRightSwerveWheel = new SwerveWheel(motorRightFrontDirection, motorRightFrontSpeed, encoder3, "3",
+      pids);
   SwerveWheel backRightSwerveWheel = new SwerveWheel(motorRightBackDirection, motorRightBackSpeed, encoder4, "4", pids);
 
   SwerveWheel[] wheels = { frontLeftSwerveWheel, backLeftSwerveWheel, backRightSwerveWheel, frontRightSwerveWheel };
+  SwerveWheel[] frontalWheels = {frontLeftSwerveWheel, frontRightSwerveWheel};
+  SwerveWheel[] backWheels = {backLeftSwerveWheel, backRightSwerveWheel};
 
   private double finalpose;
-  private double xToAngle, yToAngle, turnSpeed, l2, r2;
+  private double x1ToAngle, y1ToAngle, x2ToAngle, y2ToAngle, turnSpeed, l2, r2;
   private double magTranslade;
-  private double yaw,roll,pitch;
-  double angleTranslade;
+  private double yaw, roll, pitch;
+  private boolean analog1Active, analog2Active;
+  double angle1Translade;
 
   @Override
   public void robotInit() {
@@ -58,6 +65,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    SmartDashboard.putNumber("Robot Heading", getRotation2d().getRotations());
     turnSpeed = j1.getRawAxis(4);
     finalpose = j1.getPOV();
 
@@ -65,118 +73,54 @@ public class Robot extends TimedRobot {
     pitch = gyro.getPitch().getValueAsDouble();
     roll = gyro.getRoll().getValueAsDouble();
 
-
-    xToAngle = -j1.getRawAxis(0);
-    yToAngle = j1.getRawAxis(1);
+    x1ToAngle = -j1.getRawAxis(0);
+    y1ToAngle = j1.getRawAxis(1);
+    
+    x2ToAngle = j1.getRawAxis(4);
+    y2ToAngle = j1.getRawAxis(5);
 
     l2 = j1.getRawAxis(2);
     r2 = j1.getRawAxis(3);
 
-    magTranslade = Math.sqrt(Math.pow(xToAngle,2) + Math.pow(yToAngle, 2));
+    analog1Active = (Math.abs(x1ToAngle) >= Constants.kDeadband) || (Math.abs(y1ToAngle) >= Constants.kDeadband);
+    analog2Active = (Math.abs(x2ToAngle) >= Constants.kDeadband) || (Math.abs(y2ToAngle) >= Constants.kDeadband);
 
-    angleTranslade = Units.radiansToRotations(Math.atan2(xToAngle, yToAngle) + Math.PI);
-    if (Math.abs(xToAngle) <= 0.05 && Math.abs(yToAngle) <= 0.05)
-      angleTranslade = -1;
+    magTranslade = Math.sqrt(Math.pow(x1ToAngle, 2) + Math.pow(y1ToAngle, 2));
+
+    angle1Translade = Units.radiansToRotations(Math.atan2(x1ToAngle, y1ToAngle) + Math.PI);
+
+    if (Math.abs(x1ToAngle) <= Constants.kDeadband && Math.abs(y1ToAngle) <= Constants.kDeadband)
+      angle1Translade = -1;
 
     if (finalpose == 0)
       finalpose = 360;
 
     SmartDashboard.putNumber("finalpose", finalpose);
-    SmartDashboard.putNumberArray("Angles", new double[]{yaw, pitch, roll});
-
-    if ((Math.abs(xToAngle) >= 0.05) || (Math.abs(yToAngle) >= 0.05))
-      translade();
+    
+    SmartDashboard.putNumber("z", (Math.IEEEremainder(yaw, 360)) + 180); 
+    if(analog1Active && analog2Active)
+      SwerveActions.turnOut(frontalWheels, backWheels, angle1Translade, x2ToAngle);
+    else if (analog1Active)
+      SwerveActions.translade(wheels, angle1Translade);
     else if (j1.getRawButton(4))
-      turnIn();
-    else{
-      motorsOff();
-    }
-    speedOn();
-
-  }
-
-  public void speedOn(){
-    for (int i = 0; i < wheels.length; i++)
-      wheels[i].setSpeed(r2 - l2);
-  }
-
-  public void motorsOff(){
-
-    for(int i = 0; i < wheels.length; i++){
-      wheels[i].stopDirection();
-      wheels[i].setSpeed(0);
-    }
-  }
-  public void translade() {
-
-    SmartDashboard.putNumber("finalpose", finalpose / 360);
-    SmartDashboard.putNumber("Analog1 angleTranslade", angleTranslade);
-
-    for (int i = 0; i < wheels.length; i++) {
-
-      double actualPose = wheels[i].getAbsoluteValue();
-
-      if (angleTranslade != -1) {
-        wheels[i].setDirection(angleTranslade);
-      } else {
-
-        wheels[i].stopDirection();
-      }
-
-      SmartDashboard.putNumber("actualpose" + (i + 1), actualPose);
-    }
-  }
-
-  public void turnIn() {
-
-    wheels[0].setDirection(0.125);
-    wheels[1].setDirection(0.885);
-    wheels[2].setDirection(0.635);
-    wheels[3].setDirection(0.375);
-  }
-
-  public void translateTurn(double direction, double translatePower, double turnPower) {
-
-    double turnAngle = turnPower * 45.0;
-
-    // if the left front wheel is in the front
-    if (wheels[0].closestAngle(direction, 135.0) >= 90.0) {
-      wheels[0].setDirection(direction + turnAngle);
-    }
-    // if it's in the back
+      SwerveActions.turnIn(wheels);
     else {
-      wheels[0].setDirection(direction - turnAngle);
+      SwerveActions.motorsOff(wheels);
     }
-    // if the left back wheel is in the front
-    if (wheels[1].closestAngle(direction, 225.0) > 90.0) {
-      wheels[1].setDirection(direction + turnAngle);
-    }
-    // if it's in the back
-    else {
-      wheels[1].setDirection(direction - turnAngle);
-    }
-    // if the right front wheel is in the front
-    if (wheels[3].closestAngle(direction, 45.0) > 90.0) {
-      wheels[3].setDirection(direction + turnAngle);
-    }
-    // if it's in the back
-    else {
-      wheels[3].setDirection(direction - turnAngle);
-    }
-    // if the right back wheel is in the front
-    if (wheels[2].closestAngle(direction, 315.0) >= 90.0) {
-      wheels[2].setDirection(direction + turnAngle);
-    }
-    // if it's in the back
-    else {
-      wheels[2].setDirection(direction - turnAngle);
-    }
-
-    wheels[0].setSpeed(translatePower);
-    wheels[1].setSpeed(translatePower);
-    wheels[2].setSpeed(translatePower);
-    wheels[3].setSpeed(translatePower);
+    SwerveActions.speedOn(wheels, (r2-l2));
 
     
+
+  }
+
+  public double getRobotHeading() {
+    return (Math.IEEEremainder(gyro.getYaw().getValueAsDouble(), 2));
+
+  }
+
+  public Rotation2d getRotation2d() {
+    return Rotation2d.fromDegrees(getRobotHeading());
+
+
   }
 }
