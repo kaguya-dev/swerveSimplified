@@ -62,8 +62,9 @@ public class SwerveWheel {
         power = power * 0.25;
         speedDriver.set(power);
 
-        if(power < 0.1){
+        if(Math.abs(power) < 0.1){
             speedDriver.stopMotor();
         }
     }
+
 }
