@@ -131,6 +131,7 @@ public class Robot extends TimedRobot {
 
     for (int i = 0; i < wheels.length; i++) {
       wheels[i].setSpeed(power);
+       
     }
   }
 
