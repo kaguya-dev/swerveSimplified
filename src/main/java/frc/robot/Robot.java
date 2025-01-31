@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
   private double finalpose;
   private double x1ToAngle, y1ToAngle, x2ToAngle, y2ToAngle, turnSpeed, l2, r2;
   private double magTranslade;
-  private double yaw, roll, pitch;
+  private double yaw, roll, pitch, magneticZ;
   private boolean analog1Active, analog2Active;
   private double eYaw;
   double angle1Translade;
@@ -68,17 +68,16 @@ public class Robot extends TimedRobot {
     turnSpeed = j1.getRawAxis(4);
     finalpose = j1.getPOV();
 
-    yaw = gyro.getYaw().getValueAsDouble();
-    pitch = gyro.getPitch().getValueAsDouble();
-    roll = gyro.getRoll().getValueAsDouble();
-
-    eYaw = (Math.abs((yaw+360)%360))/360;
+    yaw = gyro.getRotation2d().getDegrees();
+    magneticZ = gyro.getMagneticFieldZ().getValueAsDouble();
 
     x1ToAngle = -j1.getRawAxis(0);
     y1ToAngle = j1.getRawAxis(1);
     
     x2ToAngle = j1.getRawAxis(4);
     y2ToAngle = j1.getRawAxis(5);
+
+    yaw = Units.degreesToRotations(yaw%360);
 
     l2 = j1.getRawAxis(2);
     r2 = j1.getRawAxis(3);
@@ -89,7 +88,7 @@ public class Robot extends TimedRobot {
     magTranslade = Math.sqrt(Math.pow(x1ToAngle, 2) + Math.pow(y1ToAngle, 2));
 
     angle1Translade = Units.radiansToRotations(Math.atan2(x1ToAngle, y1ToAngle) + Math.PI);
-    //angle1Translade -= eYaw;
+    angle1Translade += yaw;
 
     if (Math.abs(x1ToAngle) <= Constants.kDeadband && Math.abs(y1ToAngle) <= Constants.kDeadband)
       angle1Translade = -1;
@@ -100,7 +99,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("finalpose", finalpose);
     
     SmartDashboard.putNumber("z", (Math.IEEEremainder(yaw, 2))); 
-    SmartDashboard.putNumber("z mod", (Math.abs((yaw+360)%360))/360); 
+    SmartDashboard.putNumber("z mod", yaw); 
 
 
     if(analog1Active && analog2Active)
