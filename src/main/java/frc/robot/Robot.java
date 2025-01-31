@@ -37,13 +37,11 @@ public class Robot extends TimedRobot {
 
   public Pigeon2 gyro = new Pigeon2(15);
 
-  private final PIDController pids = new PIDController(Constants.KP_Swerve_ANGLE, Constants.KI_Swerve_ANGLE,
-      Constants.KD_Swerve_ANGLE);
+  private final PIDController pids = new PIDController(Constants.KP_Swerve_ANGLE, Constants.KI_Swerve_ANGLE, Constants.KD_Swerve_ANGLE);
 
   SwerveWheel frontLeftSwerveWheel = new SwerveWheel(motorLeftFrontDirection, motorLeftFrontSpeed, encoder1, "1", pids);
   SwerveWheel backLeftSwerveWheel = new SwerveWheel(motorLeftBackDirection, motorLeftBackSpeed, encoder2, "2", pids);
-  SwerveWheel frontRightSwerveWheel = new SwerveWheel(motorRightFrontDirection, motorRightFrontSpeed, encoder3, "3",
-      pids);
+  SwerveWheel frontRightSwerveWheel = new SwerveWheel(motorRightFrontDirection, motorRightFrontSpeed, encoder3, "3", pids);
   SwerveWheel backRightSwerveWheel = new SwerveWheel(motorRightBackDirection, motorRightBackSpeed, encoder4, "4", pids);
 
   SwerveWheel[] wheels = { frontLeftSwerveWheel, backLeftSwerveWheel, backRightSwerveWheel, frontRightSwerveWheel };
@@ -55,6 +53,7 @@ public class Robot extends TimedRobot {
   private double magTranslade;
   private double yaw, roll, pitch;
   private boolean analog1Active, analog2Active;
+  private double eYaw;
   double angle1Translade;
 
   @Override
@@ -73,6 +72,8 @@ public class Robot extends TimedRobot {
     pitch = gyro.getPitch().getValueAsDouble();
     roll = gyro.getRoll().getValueAsDouble();
 
+    eYaw = (Math.abs((yaw+360)%360))/360;
+
     x1ToAngle = -j1.getRawAxis(0);
     y1ToAngle = j1.getRawAxis(1);
     
@@ -88,6 +89,7 @@ public class Robot extends TimedRobot {
     magTranslade = Math.sqrt(Math.pow(x1ToAngle, 2) + Math.pow(y1ToAngle, 2));
 
     angle1Translade = Units.radiansToRotations(Math.atan2(x1ToAngle, y1ToAngle) + Math.PI);
+    //angle1Translade -= eYaw;
 
     if (Math.abs(x1ToAngle) <= Constants.kDeadband && Math.abs(y1ToAngle) <= Constants.kDeadband)
       angle1Translade = -1;
@@ -97,13 +99,19 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("finalpose", finalpose);
     
-    SmartDashboard.putNumber("z", (Math.IEEEremainder(yaw, 360)) + 180); 
+    SmartDashboard.putNumber("z", (Math.IEEEremainder(yaw, 2))); 
+    SmartDashboard.putNumber("z mod", (Math.abs((yaw+360)%360))/360); 
+
+
     if(analog1Active && analog2Active)
       SwerveActions.turnOut(frontalWheels, backWheels, angle1Translade, x2ToAngle);
+
     else if (analog1Active)
       SwerveActions.translade(wheels, angle1Translade);
+
     else if (j1.getRawButton(4))
       SwerveActions.turnIn(wheels);
+
     else {
       SwerveActions.motorsOff(wheels);
     }

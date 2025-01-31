@@ -43,8 +43,10 @@ public class SwerveActions {
       double actualPoseB = backWheels[i].getAbsoluteValue();
 
       if (angleTranslade != -1) {
-        frontWheels[i].setDirection(angleTranslade);
-        backWheels[i].setDirection(angleTranslade + (diffPower/2));
+        diffPower = (diffPower/8);
+        frontWheels[i].setDirection(angleTranslade - (diffPower));
+        backWheels[i].setDirection(angleTranslade + (diffPower));
+       
       } else {
         frontWheels[i].stopDirection();
         backWheels[i].stopDirection();
