@@ -63,6 +63,18 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void robotPeriodic() {
+    // TODO Auto-generated method stub
+    super.robotPeriodic();
+  }
+
+  @Override
+  public void teleopInit() {
+    // TODO Auto-generated method stub
+    super.teleopInit();
+  }
+
+  @Override
   public void teleopPeriodic() {
     SmartDashboard.putNumber("Robot Heading", getRotation2d().getRotations());
     turnSpeed = j1.getRawAxis(4);
@@ -120,6 +132,12 @@ public class Robot extends TimedRobot {
 
   }
 
+  @Override
+  public void teleopExit() {
+    // TODO Auto-generated method stub
+    super.teleopExit();
+  }
+
   public double getRobotHeading() {
     return (Math.IEEEremainder(gyro.getYaw().getValueAsDouble(), 2));
 
@@ -129,5 +147,23 @@ public class Robot extends TimedRobot {
     return Rotation2d.fromDegrees(getRobotHeading());
 
 
+  }
+
+  @Override
+  public void autonomousInit() {
+    // TODO Auto-generated method stub
+    super.autonomousInit();
+  }
+
+  @Override
+  public void autonomousPeriodic() {
+    // TODO Auto-generated method stub
+    super.autonomousPeriodic();
+  }
+
+  @Override
+  public void autonomousExit() {
+    // TODO Auto-generated method stub
+    super.autonomousExit();
   }
 }
