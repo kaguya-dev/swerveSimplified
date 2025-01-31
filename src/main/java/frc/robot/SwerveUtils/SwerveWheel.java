@@ -5,7 +5,6 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
@@ -59,13 +58,13 @@ public class SwerveWheel {
     }
 
     public void setSpeed(double power){
-        power = power * 0.25;
+        power = power * Constants.MAX_SPEED;
         speedDriver.set(power);
 
         if(Math.abs(power) < 0.1){
             speedDriver.stopMotor();
         }
     }
-
-
 }
+
+

@@ -72,7 +72,7 @@ public class Constants {
   public static final int BNT_X = 3;
 
   // Maximum Speed
-  public static final double MAX_SPEED = 1;
+  public static final double MAX_SPEED = 0.25;
 
   // Conversion Constants
   public static final double kDriveEncoderRot2Meter = (Math.PI * kWheelDiameterMeters) / kDriveMotorGearRatio;
