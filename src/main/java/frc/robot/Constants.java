@@ -6,8 +6,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 public class Constants {
 
   // Operator Constants
@@ -19,6 +17,7 @@ public class Constants {
   public static final double kTrackWidth = 0.58;
   public static final double kWheelBase = 0.60;  
   public static final double kWheelDiameterMeters = 0.1016; // Diâmetro da roda em metros (4 polegadas convertidas para metros)
+  public static final double kWheelCircuferenceMeters = kWheelDiameterMeters * Math.PI;
   public static final double kDriveMotorGearRatio = 6.75; // Relação de transmissão do motor de direção
   public static final double kTurningMotorGearRatio = 21.43; // Relação de transmissão do motor de rotação
 
@@ -66,6 +65,8 @@ public class Constants {
   public static final int LEFT_STICK_Y = 1;
   public static final int LEFT_STICK_X = 0;
   public static final int RIGHT_ROT_AXIS = 4;
+  public static final int L2_TRIGGER = 2;
+  public static final int R2_TRIGGER = 3;
 
   public static final int BNT_B = 2;
   public static final int BNT_A = 1;

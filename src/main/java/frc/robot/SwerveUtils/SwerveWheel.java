@@ -2,9 +2,12 @@ package frc.robot.SwerveUtils;
 
 
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
@@ -12,6 +15,7 @@ public class SwerveWheel {
     private final SparkMax directionDriver;
     private final SparkMax speedDriver;
     private final CANcoder encoder;
+    private final RelativeEncoder speedEncoder;
     private final PIDController controller;
     private String WheelID;
 
@@ -20,6 +24,7 @@ public class SwerveWheel {
         this.speedDriver = speedDriver;
         this.encoder = encoder;
         this.controller = controller;
+        this.speedEncoder = speedDriver.getAlternateEncoder();
         WheelID = wheelID;
 
     }
@@ -57,6 +62,10 @@ public class SwerveWheel {
         return encoder.getAbsolutePosition().getValueAsDouble();
     }
 
+    public Rotation2d getR2D(){
+        return new Rotation2d(Units.rotationsToRadians(encoder.getAbsolutePosition().getValueAsDouble()));
+    }
+
     public void setSpeed(double power){
         power = power * Constants.MAX_SPEED;
         speedDriver.set(power);
@@ -64,6 +73,10 @@ public class SwerveWheel {
         if(Math.abs(power) < 0.1){
             speedDriver.stopMotor();
         }
+    }
+
+    public double getRotSpeedInSec(){
+        return (speedEncoder.getVelocity()/60)*Constants.MAX_SPEED;
     }
 }
 

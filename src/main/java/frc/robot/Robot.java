@@ -6,11 +6,18 @@ import com.revrobotics.RelativeEncoder;
 import static edu.wpi.first.units.Units.Degrees;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix6.swerve.SwerveModule;
 
 import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -35,6 +42,11 @@ public class Robot extends TimedRobot {
   public CANcoder encoder3 = new CANcoder(Constants.CANCODER_FRONT_RIGHT);
   public CANcoder encoder4 = new CANcoder(Constants.CANCODER_BACK_RIGHT);
 
+  
+  private final StructArrayPublisher<SwerveModuleState> publisher =
+    NetworkTableInstance.getDefault()
+      .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).publish();;
+
   public Pigeon2 gyro = new Pigeon2(15);
 
   private final PIDController pids = new PIDController(Constants.KP_Swerve_ANGLE, Constants.KI_Swerve_ANGLE, Constants.KD_Swerve_ANGLE);
@@ -43,56 +55,81 @@ public class Robot extends TimedRobot {
   SwerveWheel backLeftSwerveWheel = new SwerveWheel(motorLeftBackDirection, motorLeftBackSpeed, encoder2, "2", pids);
   SwerveWheel frontRightSwerveWheel = new SwerveWheel(motorRightFrontDirection, motorRightFrontSpeed, encoder3, "3", pids);
   SwerveWheel backRightSwerveWheel = new SwerveWheel(motorRightBackDirection, motorRightBackSpeed, encoder4, "4", pids);
+  SwerveModuleState frontLeftSwerveWheelState = new SwerveModuleState();
+  SwerveModuleState backLeftSwerveWheelState = new SwerveModuleState();
+  SwerveModuleState frontRightSwerveWheelState = new SwerveModuleState();
+  SwerveModuleState backRightSwerveWheelState = new SwerveModuleState();
 
   SwerveWheel[] wheels = { frontLeftSwerveWheel, backLeftSwerveWheel, backRightSwerveWheel, frontRightSwerveWheel };
   SwerveWheel[] frontalWheels = {frontLeftSwerveWheel, frontRightSwerveWheel};
   SwerveWheel[] backWheels = {backLeftSwerveWheel, backRightSwerveWheel};
-
   private double finalpose;
   private double x1ToAngle, y1ToAngle, x2ToAngle, y2ToAngle, turnSpeed, l2, r2;
   private double magTranslade;
   private double yaw, roll, pitch, magneticZ;
   private boolean analog1Active, analog2Active;
-  private double eYaw;
+
   double angle1Translade;
 
   @Override
   public void robotInit() {
+
     pids.setTolerance(0.01);
     pids.setIZone(0.1);
   }
 
   @Override
   public void robotPeriodic() {
-    // TODO Auto-generated method stub
-    super.robotPeriodic();
+
+    yaw = gyro.getRotation2d().getDegrees();
+    magneticZ = gyro.getMagneticFieldZ().getValueAsDouble();
+
+    yaw = Units.degreesToRotations(yaw % 360);
+    
+    SmartDashboard.putNumber("z", (Math.IEEEremainder(yaw, 2))); 
+    SmartDashboard.putNumber("z rad", Units.rotationsToRadians(yaw)); 
+
+    frontLeftSwerveWheelState.speedMetersPerSecond = frontLeftSwerveWheel.getRotSpeedInSec();
+    backLeftSwerveWheelState.speedMetersPerSecond = backLeftSwerveWheel.getRotSpeedInSec();
+    frontRightSwerveWheelState.speedMetersPerSecond = frontRightSwerveWheel.getRotSpeedInSec();
+    backRightSwerveWheelState.speedMetersPerSecond = backRightSwerveWheel.getRotSpeedInSec();
+
+    frontLeftSwerveWheelState.angle = frontLeftSwerveWheel.getR2D().plus(new Rotation2d(yaw));
+    backLeftSwerveWheelState.angle = backLeftSwerveWheel.getR2D().plus(new Rotation2d(yaw));
+    frontRightSwerveWheelState.angle = frontRightSwerveWheel.getR2D().plus(new Rotation2d(yaw));
+    backRightSwerveWheelState.angle = backRightSwerveWheel.getR2D().plus(new Rotation2d(yaw));
+
+    publisher.set(new SwerveModuleState[] {
+      frontLeftSwerveWheelState,
+      frontRightSwerveWheelState,
+      backLeftSwerveWheelState,
+      backRightSwerveWheelState
+    });
   }
 
   @Override
   public void teleopInit() {
-    // TODO Auto-generated method stub
+    
     super.teleopInit();
   }
 
   @Override
   public void teleopPeriodic() {
     SmartDashboard.putNumber("Robot Heading", getRotation2d().getRotations());
-    turnSpeed = j1.getRawAxis(4);
+    turnSpeed = j1.getRawAxis(Constants.RIGHT_ROT_AXIS);
     finalpose = j1.getPOV();
 
-    yaw = gyro.getRotation2d().getDegrees();
-    magneticZ = gyro.getMagneticFieldZ().getValueAsDouble();
+    if(j1.getRawButton(Constants.BNT_B))
+      gyro.setYaw(0);
 
-    x1ToAngle = -j1.getRawAxis(0);
-    y1ToAngle = j1.getRawAxis(1);
+    x1ToAngle = -j1.getRawAxis(Constants.LEFT_STICK_X);
+    y1ToAngle = j1.getRawAxis(Constants.LEFT_STICK_Y);
     
     x2ToAngle = j1.getRawAxis(4);
     y2ToAngle = j1.getRawAxis(5);
 
-    yaw = Units.degreesToRotations(yaw%360);
-
-    l2 = j1.getRawAxis(2);
-    r2 = j1.getRawAxis(3);
+    l2 = j1.getRawAxis(Constants.L2_TRIGGER);
+    r2 = j1.getRawAxis(Constants.R2_TRIGGER);
 
     analog1Active = (Math.abs(x1ToAngle) >= Constants.kDeadband) || (Math.abs(y1ToAngle) >= Constants.kDeadband);
     analog2Active = (Math.abs(x2ToAngle) >= Constants.kDeadband) || (Math.abs(y2ToAngle) >= Constants.kDeadband);
@@ -109,13 +146,10 @@ public class Robot extends TimedRobot {
       finalpose = 360;
 
     SmartDashboard.putNumber("finalpose", finalpose);
-    
-    SmartDashboard.putNumber("z", (Math.IEEEremainder(yaw, 2))); 
-    SmartDashboard.putNumber("z mod", yaw); 
 
 
     if(analog1Active && analog2Active)
-      SwerveActions.turnOut(frontalWheels, backWheels, angle1Translade, x2ToAngle);
+      SwerveActions.turnOut(frontalWheels, backWheels, angle1Translade, turnSpeed);
 
     else if (analog1Active)
       SwerveActions.translade(wheels, angle1Translade);
@@ -126,15 +160,12 @@ public class Robot extends TimedRobot {
     else {
       SwerveActions.motorsOff(wheels);
     }
-    SwerveActions.speedOn(wheels, (r2-l2));
+    SwerveActions.speedOn(wheels, (r2-l2));    
 
-    
-
-  }
+}
 
   @Override
   public void teleopExit() {
-    // TODO Auto-generated method stub
     super.teleopExit();
   }
 
@@ -151,19 +182,19 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    // TODO Auto-generated method stub
+    
     super.autonomousInit();
   }
 
   @Override
   public void autonomousPeriodic() {
-    // TODO Auto-generated method stub
+    
     super.autonomousPeriodic();
   }
 
   @Override
   public void autonomousExit() {
-    // TODO Auto-generated method stub
+  
     super.autonomousExit();
   }
 }
