@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveActions {
 
-    public static void speedOn(SwerveWheel[] wheels, double power) {
+  public static void speedOn(SwerveWheel[] wheels, double power) {
     for (int i = 0; i < wheels.length; i++)
       wheels[i].setSpeed(power);
   }
@@ -35,33 +35,44 @@ public class SwerveActions {
     }
   }
 
-  public static void turnOut(SwerveWheel[] frontWheels, SwerveWheel[] backWheels, double angleTranslade, double diffPower){
-
+  public static void turnOut(SwerveWheel[] frontWheels, SwerveWheel[] backWheels, double angleTranslade,
+      double diffPower) {
     for (int i = 0; i < frontWheels.length; i++) {
-
-      double actualPoseF = frontWheels[i].getAbsoluteValue();
-      double actualPoseB = backWheels[i].getAbsoluteValue();
-
+      //String fWheelID = frontWheels[i].WheelID;
+      //String bWheelID = backWheels[i].WheelID;
       if (angleTranslade != -1) {
-        diffPower = (diffPower/8);
-        frontWheels[i].setDirection(angleTranslade - (diffPower));
-        backWheels[i].setDirection(angleTranslade + (diffPower));
-       
+        diffPower = (diffPower / 8);
+        double actualPoseF = rounder((angleTranslade - (diffPower)*(i*1.25)));
+        double actualPoseB = rounder((angleTranslade + (diffPower)*(i*1.25)));
+        frontWheels[i].setDirection(actualPoseF);
+        backWheels[i].setDirection(actualPoseB);
+
       } else {
         frontWheels[i].stopDirection();
         backWheels[i].stopDirection();
       }
-
-      SmartDashboard.putNumber("frontal actualpose" + (i + 1), actualPoseF);
-      SmartDashboard.putNumber("back actualpose" + (i + 1), actualPoseB);
     }
   }
 
-  public static void turnIn(SwerveWheel[] wheels) {
+  public static void turnIn(SwerveWheel[] wheels, double directionAxis) {
+    //if (directionAxis > 0) {
+      wheels[0].setDirection(0.125);
+      wheels[1].setDirection(0.875);
+      wheels[2].setDirection(0.625);
+      wheels[3].setDirection(0.375);
+    //} else if (directionAxis < 0) {
+      //wheels[0].setDirection(0.625);
+      //wheels[1].setDirection(0.375);
+      //wheels[2].setDirection(0.125);
+      //wheels[3].setDirection(0.875);
+    //}
+  }
 
-    wheels[0].setDirection(0.125);
-    wheels[1].setDirection(0.875);
-    wheels[2].setDirection(0.625);
-    wheels[3].setDirection(0.375);
+  private static double rounder(double actualPose) {
+    if (actualPose > 1)
+      return actualPose -= 1;
+    else if (actualPose < 1)
+      return actualPose += 1;
+    return actualPose;
   }
 }

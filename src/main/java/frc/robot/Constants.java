@@ -6,6 +6,8 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.NetworkTableInstance;
 public class Constants {
 
   // Operator Constants
@@ -57,9 +59,11 @@ public class Constants {
   public static final int CANCODER_BACK_RIGHT = 14;
 
   // PID Constants for Swerve
-  public static double KP_Swerve_ANGLE = 1.8;
+  public static double KP_Swerve_ANGLE = 2;
   public static double KI_Swerve_ANGLE = 0.0001;
-  public static double KD_Swerve_ANGLE = 0.0;
+  public static double KD_Swerve_ANGLE = 0.001;
+
+  public static double[] PIDSwerve = {KP_Swerve_ANGLE, KI_Swerve_ANGLE, KD_Swerve_ANGLE};
 
   // Joystick Button Mapping
   public static final int LEFT_STICK_Y = 1;

@@ -2,18 +2,11 @@ package frc.robot;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.RelativeEncoder;
-import static edu.wpi.first.units.Units.Degrees;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.ctre.phoenix6.swerve.SwerveModule;
-
-import edu.wpi.first.hal.SimDevice.Direction;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -24,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.SwerveUtils.SwerveActions;
 import frc.robot.SwerveUtils.SwerveWheel;
 
+@Logged
 public class Robot extends TimedRobot {
   private Joystick j1 = new Joystick(0);
 
@@ -45,7 +39,7 @@ public class Robot extends TimedRobot {
   
   private final StructArrayPublisher<SwerveModuleState> publisher =
     NetworkTableInstance.getDefault()
-      .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).publish();;
+      .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).publish();
 
   public Pigeon2 gyro = new Pigeon2(15);
 
@@ -55,6 +49,7 @@ public class Robot extends TimedRobot {
   SwerveWheel backLeftSwerveWheel = new SwerveWheel(motorLeftBackDirection, motorLeftBackSpeed, encoder2, "2", pids);
   SwerveWheel frontRightSwerveWheel = new SwerveWheel(motorRightFrontDirection, motorRightFrontSpeed, encoder3, "3", pids);
   SwerveWheel backRightSwerveWheel = new SwerveWheel(motorRightBackDirection, motorRightBackSpeed, encoder4, "4", pids);
+
   SwerveModuleState frontLeftSwerveWheelState = new SwerveModuleState();
   SwerveModuleState backLeftSwerveWheelState = new SwerveModuleState();
   SwerveModuleState frontRightSwerveWheelState = new SwerveModuleState();
@@ -67,15 +62,16 @@ public class Robot extends TimedRobot {
   private double x1ToAngle, y1ToAngle, x2ToAngle, y2ToAngle, turnSpeed, l2, r2;
   private double magTranslade;
   private double yaw, roll, pitch, magneticZ;
+  private double[] calibrationPID = {Constants.KP_Swerve_ANGLE, Constants.KI_Swerve_ANGLE, Constants.KD_Swerve_ANGLE};
   private boolean analog1Active, analog2Active;
 
   double angle1Translade;
 
   @Override
   public void robotInit() {
-
     pids.setTolerance(0.01);
     pids.setIZone(0.1);
+
   }
 
   @Override
@@ -105,6 +101,7 @@ public class Robot extends TimedRobot {
       backLeftSwerveWheelState,
       backRightSwerveWheelState
     });
+
   }
 
   @Override
@@ -148,25 +145,28 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("finalpose", finalpose);
 
 
-    if(analog1Active && analog2Active)
+    if(analog1Active && analog2Active){
       SwerveActions.turnOut(frontalWheels, backWheels, angle1Translade, turnSpeed);
-
-    else if (analog1Active)
+      SwerveActions.speedOn(wheels, (r2-l2));    
+    }
+    else if (analog1Active){
       SwerveActions.translade(wheels, angle1Translade);
-
-    else if (j1.getRawButton(4))
-      SwerveActions.turnIn(wheels);
+      SwerveActions.speedOn(wheels, (r2-l2));    
+    }
+    else if (analog2Active){
+      SwerveActions.turnIn(wheels, x2ToAngle);
+      SwerveActions.speedOn(wheels, Math.copySign((r2-l2), x2ToAngle)); 
+    }
 
     else {
       SwerveActions.motorsOff(wheels);
+      SwerveActions.speedOn(wheels, (r2-l2));    
     }
-    SwerveActions.speedOn(wheels, (r2-l2));    
 
 }
 
   @Override
   public void teleopExit() {
-    super.teleopExit();
   }
 
   public double getRobotHeading() {
@@ -183,18 +183,15 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     
-    super.autonomousInit();
   }
 
   @Override
   public void autonomousPeriodic() {
     
-    super.autonomousPeriodic();
   }
 
   @Override
   public void autonomousExit() {
   
-    super.autonomousExit();
   }
 }

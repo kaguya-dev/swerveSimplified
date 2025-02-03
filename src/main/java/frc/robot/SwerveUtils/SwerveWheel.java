@@ -12,12 +12,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 public class SwerveWheel {
-    private final SparkMax directionDriver;
+    public final SparkMax directionDriver;
     private final SparkMax speedDriver;
     private final CANcoder encoder;
     private final RelativeEncoder speedEncoder;
     private final PIDController controller;
-    private String WheelID;
+    public String WheelID; 
 
     public SwerveWheel(SparkMax directionDriver, SparkMax speedDriver, CANcoder encoder, String wheelID, PIDController controller) {
         this.directionDriver = directionDriver;
