@@ -7,6 +7,7 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
@@ -79,7 +80,13 @@ public class SwerveWheel {
         }
     }
 
-    public double getRotSpeedInSec() {
-        return (speedEncoder.getVelocity() / 60) * Constants.MAX_SPEED;
+    public double getRotSpeedInSec(){
+        return (speedEncoder.getVelocity() * 60);
     }
+
+
+    public double getPosition() {
+        return (speedEncoder.getPosition()) ;
+    }
+
 }
