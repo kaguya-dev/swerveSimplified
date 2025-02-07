@@ -55,7 +55,7 @@ public class Robot extends TimedRobot {
   SwerveModuleState frontRightSwerveWheelState = new SwerveModuleState();
   SwerveModuleState backRightSwerveWheelState = new SwerveModuleState();
 
-  SwerveWheel[] wheels = { frontLeftSwerveWheel, backLeftSwerveWheel, backRightSwerveWheel, frontRightSwerveWheel };
+  SwerveWheel[] wheels = { frontLeftSwerveWheel,frontRightSwerveWheel, backLeftSwerveWheel, backRightSwerveWheel};
   SwerveWheel[] frontalWheels = {frontLeftSwerveWheel, frontRightSwerveWheel};
   SwerveWheel[] backWheels = {backLeftSwerveWheel, backRightSwerveWheel};
   private double finalpose;
@@ -119,8 +119,8 @@ public class Robot extends TimedRobot {
     if(j1.getRawButton(Constants.BNT_B))
       gyro.setYaw(0);
 
-    x1ToAngle = -j1.getRawAxis(Constants.LEFT_STICK_X);
-    y1ToAngle = j1.getRawAxis(Constants.LEFT_STICK_Y);
+    x1ToAngle = -j1.getRawAxis(0);
+    y1ToAngle = j1.getRawAxis(1);
     
     x2ToAngle = j1.getRawAxis(4);
     y2ToAngle = j1.getRawAxis(5);
@@ -134,6 +134,7 @@ public class Robot extends TimedRobot {
     magTranslade = Math.sqrt(Math.pow(x1ToAngle, 2) + Math.pow(y1ToAngle, 2));
 
     angle1Translade = Units.radiansToRotations(Math.atan2(x1ToAngle, y1ToAngle) + Math.PI);
+    
     angle1Translade += yaw;
 
     if (Math.abs(x1ToAngle) <= Constants.kDeadband && Math.abs(y1ToAngle) <= Constants.kDeadband)
@@ -143,24 +144,23 @@ public class Robot extends TimedRobot {
       finalpose = 360;
 
     SmartDashboard.putNumber("finalpose", finalpose);
+    SmartDashboard.putNumber("Analog1Translade", angle1Translade);
 
+    if (analog1Active){
+      SwerveActions.transladeTurn(frontalWheels, backWheels, angle1Translade, turnSpeed);
+      SwerveActions.speedOn(wheels, (r2-l2));
 
-    if(analog1Active && analog2Active){
-      SwerveActions.turnOut(frontalWheels, backWheels, angle1Translade, turnSpeed);
-      SwerveActions.speedOn(wheels, (r2-l2));    
-    }
-    else if (analog1Active){
-      SwerveActions.translade(wheels, angle1Translade);
-      SwerveActions.speedOn(wheels, (r2-l2));    
+      SmartDashboard.putString("TurnMode", "TransladeTurn");
     }
     else if (analog2Active){
       SwerveActions.turnIn(wheels, x2ToAngle);
       SwerveActions.speedOn(wheels, Math.copySign((r2-l2), x2ToAngle)); 
+      SmartDashboard.putString("TurnMode", "TurnIn");
     }
-
     else {
       SwerveActions.motorsOff(wheels);
       SwerveActions.speedOn(wheels, (r2-l2));    
+      SmartDashboard.putString("TurnMode", "Stopped");
     }
 
 }

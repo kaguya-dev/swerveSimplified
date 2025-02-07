@@ -1,5 +1,6 @@
 package frc.robot.SwerveUtils;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveActions {
@@ -17,62 +18,96 @@ public class SwerveActions {
     }
   }
 
-  public static void translade(SwerveWheel[] wheels, double angleTranslade) {
+  // public static void translade(SwerveWheel[] wheels, double angleTranslade) {
 
-    SmartDashboard.putNumber("Analog1 angleTranslade", angleTranslade);
+  // SmartDashboard.putNumber("Analog1 angleTranslade", angleTranslade);
 
-    for (int i = 0; i < wheels.length; i++) {
+  // for (int i = 0; i < wheels.length; i++) {
 
-      double actualPose = wheels[i].getAbsoluteValue();
+  // double actualPose = wheels[i].getAbsoluteValue();
 
-      if (angleTranslade != -1) {
-        wheels[i].setDirection(angleTranslade);
-      } else {
-        wheels[i].stopDirection();
-      }
+  // if (angleTranslade != -1) {
+  // wheels[i].setDirection(angleTranslade);
+  // } else {
+  // wheels[i].stopDirection();
+  // }
 
-      SmartDashboard.putNumber("actualpose" + (i + 1), actualPose);
-    }
-  }
+  // SmartDashboard.putNumber("actualpose" + (i + 1), actualPose);
+  // }
+  // }
 
   public static void turnOut(SwerveWheel[] frontWheels, SwerveWheel[] backWheels, double angleTranslade,
       double diffPower) {
-    for (int i = 0; i < frontWheels.length; i++) {
-      //String fWheelID = frontWheels[i].WheelID;
-      //String bWheelID = backWheels[i].WheelID;
-      if (angleTranslade != -1) {
-        diffPower = (diffPower / 8);
-        double actualPoseF = rounder((angleTranslade - (diffPower)*(i*1.25)));
-        double actualPoseB = rounder((angleTranslade + (diffPower)*(i*1.25)));
-        frontWheels[i].setDirection(actualPoseF);
-        backWheels[i].setDirection(actualPoseB);
 
-      } else {
-        frontWheels[i].stopDirection();
-        backWheels[i].stopDirection();
-      }
+    if (angleTranslade != -1) {
+      diffPower = Units.degreesToRotations(diffPower * 45);
+      double actualPoseF = (angleTranslade + (diffPower));
+      double actualPoseB = (angleTranslade - (diffPower));
+      frontWheels[0].setDirection(actualPoseF);
+      frontWheels[1].setDirection(actualPoseF);
+      backWheels[0].setDirection(actualPoseB);
+      backWheels[1].setDirection(actualPoseB);
+
+    } else {
+      frontWheels[0].stopDirection();
+      frontWheels[1].stopDirection();
+      backWheels[0].stopDirection();
+      backWheels[1].stopDirection();
     }
+
+  }
+
+  public static void transladeTurn(SwerveWheel[] frontWheels, SwerveWheel[] backWheels, double angleTranslade,
+      double diffPower) {
+    diffPower = diffPower / 8;
+
+    // if the left front wheel is in the front
+    if (frontWheels[0].closestAngle(angleTranslade, 0.375) >= 0.25) {
+      frontWheels[0].setDirection(angleTranslade + diffPower);
+    }
+    // if it's in the back
+    else {
+      frontWheels[0].setDirection(angleTranslade - diffPower);
+    }
+    // if the left back wheel is in the front
+    if (backWheels[0].closestAngle(angleTranslade, 0.625) > 0.25) {
+      backWheels[0].setDirection(angleTranslade + diffPower);
+    }
+    // if it's in the back
+    else {
+      backWheels[0].setDirection(angleTranslade - diffPower);
+    }
+
+    // if the right front wheel is in the front
+    if (frontWheels[1].closestAngle(angleTranslade, 0.125) > 0.25)
+    {
+        frontWheels[1].setDirection(angleTranslade + diffPower);
+    }
+    // if it's in the back
+    else
+    {
+        frontWheels[1].setDirection(angleTranslade - diffPower);
+    }
+
+    // if the right back wheel is in the front
+    if (backWheels[1].closestAngle(angleTranslade, 0.875) >= 0.25)
+    {
+        backWheels[1].setDirection(angleTranslade + diffPower);
+    }
+    // if it's in the back
+    else
+    {
+        backWheels[1].setDirection(angleTranslade - diffPower);
+    }
+
   }
 
   public static void turnIn(SwerveWheel[] wheels, double directionAxis) {
-    //if (directionAxis > 0) {
-      wheels[0].setDirection(0.125);
-      wheels[1].setDirection(0.875);
-      wheels[2].setDirection(0.625);
-      wheels[3].setDirection(0.375);
-    //} else if (directionAxis < 0) {
-      //wheels[0].setDirection(0.625);
-      //wheels[1].setDirection(0.375);
-      //wheels[2].setDirection(0.125);
-      //wheels[3].setDirection(0.875);
-    //}
-  }
 
-  private static double rounder(double actualPose) {
-    if (actualPose > 1)
-      return actualPose -= 1;
-    else if (actualPose < 1)
-      return actualPose += 1;
-    return actualPose;
+    wheels[0].setDirection(0.625);
+    wheels[1].setDirection(0.875);
+    wheels[2].setDirection(0.375);
+    wheels[3].setDirection(0.125);
+
   }
 }
