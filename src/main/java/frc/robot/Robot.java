@@ -1,7 +1,13 @@
 package frc.robot;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkMaxAlternateEncoder;
+
+import java.util.Optional;
+import java.util.OptionalInt;
+
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.epilogue.Logged;
@@ -11,9 +17,12 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Autonomous.AutoCalc;
 import frc.robot.SwerveUtils.SwerveActions;
 import frc.robot.SwerveUtils.SwerveWheel;
 
@@ -36,12 +45,15 @@ public class Robot extends TimedRobot {
   public CANcoder encoder3 = new CANcoder(Constants.CANCODER_FRONT_RIGHT);
   public CANcoder encoder4 = new CANcoder(Constants.CANCODER_BACK_RIGHT);
 
+  public RelativeEncoder alternateEncoder1 = motorLeftFrontSpeed.getAlternateEncoder();
+
   
   private final StructArrayPublisher<SwerveModuleState> publisher =
     NetworkTableInstance.getDefault()
       .getStructArrayTopic("/SwerveStates", SwerveModuleState.struct).publish();
 
   public Pigeon2 gyro = new Pigeon2(15);
+  
 
   private final PIDController pids = new PIDController(Constants.KP_Swerve_ANGLE, Constants.KI_Swerve_ANGLE, Constants.KD_Swerve_ANGLE);
 
@@ -69,6 +81,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+
+    
     pids.setTolerance(0.01);
     pids.setIZone(0.1);
 
@@ -101,7 +115,7 @@ public class Robot extends TimedRobot {
       backLeftSwerveWheelState,
       backRightSwerveWheelState
     });
-
+    
   }
 
   @Override
@@ -162,7 +176,7 @@ public class Robot extends TimedRobot {
       SwerveActions.speedOn(wheels, (r2-l2));    
       SmartDashboard.putString("TurnMode", "Stopped");
     }
-
+    
 }
 
   @Override
@@ -183,11 +197,32 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     
+    //String alliance = DriverStation.getAlliance().toString();
   }
 
   @Override
   public void autonomousPeriodic() {
+
+    int station = DriverStation.getLocation().getAsInt();
     
+      switch(station){
+
+      case 1:
+         AutoCalc.plan1(wheels);
+          break;
+
+      case 2:
+          AutoCalc.plan2(wheels);
+          break;
+
+      case 3:
+          AutoCalc.plan3(wheels);
+          break;
+
+      default:
+          break;
+  }
+      
   }
 
   @Override

@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
@@ -15,7 +16,6 @@ public class SwerveWheel {
     public final SparkMax directionDriver;
     private final SparkMax speedDriver;
     private final CANcoder encoder;
-    private final RelativeEncoder speedEncoder;
     private final PIDController controller;
     public String WheelID;
 
@@ -25,7 +25,6 @@ public class SwerveWheel {
         this.speedDriver = speedDriver;
         this.encoder = encoder;
         this.controller = controller;
-        this.speedEncoder = speedDriver.getAlternateEncoder();
         WheelID = wheelID;
 
     }
@@ -81,12 +80,12 @@ public class SwerveWheel {
     }
 
     public double getRotSpeedInSec(){
-        return (speedEncoder.getVelocity() * 60);
+        return (speedDriver.getAlternateEncoder().getVelocity() * 60);
     }
 
-
-    public double getPosition() {
-        return (speedEncoder.getPosition()) ;
+    public double getMeters() {
+        double metros = speedDriver.getEncoder().getPosition() * Constants.kWheelCircuferenceMeters;
+        return metros;
     }
-
+    
 }
