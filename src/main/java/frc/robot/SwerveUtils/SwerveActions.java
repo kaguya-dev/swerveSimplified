@@ -1,7 +1,6 @@
 package frc.robot.SwerveUtils;
 
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveActions {
 
@@ -18,23 +17,17 @@ public class SwerveActions {
     }
   }
 
-  // public static void translade(SwerveWheel[] wheels, double angleTranslade) {
+  public static void translade(SwerveWheel[] wheels, double angleTranslade) {
 
-  // SmartDashboard.putNumber("Analog1 angleTranslade", angleTranslade);
+    for (int i = 0; i < wheels.length; i++) {
 
-  // for (int i = 0; i < wheels.length; i++) {
-
-  // double actualPose = wheels[i].getAbsoluteValue();
-
-  // if (angleTranslade != -1) {
-  // wheels[i].setDirection(angleTranslade);
-  // } else {
-  // wheels[i].stopDirection();
-  // }
-
-  // SmartDashboard.putNumber("actualpose" + (i + 1), actualPose);
-  // }
-  // }
+      if (angleTranslade != -1) {
+        wheels[i].setDirection(angleTranslade);
+      } else {
+        wheels[i].stopDirection();
+      }
+    }
+  }
 
   public static void turnOut(SwerveWheel[] frontWheels, SwerveWheel[] backWheels, double angleTranslade,
       double diffPower) {
@@ -79,25 +72,21 @@ public class SwerveActions {
     }
 
     // if the right front wheel is in the front
-    if (frontWheels[1].closestAngle(angleTranslade, 0.125) > 0.25)
-    {
-        frontWheels[1].setDirection(angleTranslade + diffPower);
+    if (frontWheels[1].closestAngle(angleTranslade, 0.125) > 0.25) {
+      frontWheels[1].setDirection(angleTranslade + diffPower);
     }
     // if it's in the back
-    else
-    {
-        frontWheels[1].setDirection(angleTranslade - diffPower);
+    else {
+      frontWheels[1].setDirection(angleTranslade - diffPower);
     }
 
     // if the right back wheel is in the front
-    if (backWheels[1].closestAngle(angleTranslade, 0.875) >= 0.25)
-    {
-        backWheels[1].setDirection(angleTranslade + diffPower);
+    if (backWheels[1].closestAngle(angleTranslade, 0.875) >= 0.25) {
+      backWheels[1].setDirection(angleTranslade + diffPower);
     }
     // if it's in the back
-    else
-    {
-        backWheels[1].setDirection(angleTranslade - diffPower);
+    else {
+      backWheels[1].setDirection(angleTranslade - diffPower);
     }
 
   }

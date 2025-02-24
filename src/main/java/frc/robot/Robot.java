@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Autonomous.AutoCalc;
 import frc.robot.SwerveUtils.SwerveActions;
@@ -94,9 +95,10 @@ public class Robot extends TimedRobot {
     yaw = gyro.getRotation2d().getDegrees();
     magneticZ = gyro.getMagneticFieldZ().getValueAsDouble();
 
-    yaw = Units.degreesToRotations(yaw % 360);
-    
-    SmartDashboard.putNumber("z", (Math.IEEEremainder(yaw, 2))); 
+    yaw = Units.degreesToRotations(yaw);
+    yaw = Math.IEEEremainder(yaw, 2);
+
+    SmartDashboard.putNumber("z", yaw); 
     SmartDashboard.putNumber("z rad", Units.rotationsToRadians(yaw)); 
 
     frontLeftSwerveWheelState.speedMetersPerSecond = frontLeftSwerveWheel.getRotSpeedInSec();
@@ -161,10 +163,41 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Analog1Translade", angle1Translade);
 
     if (analog1Active){
-      SwerveActions.transladeTurn(frontalWheels, backWheels, angle1Translade, turnSpeed);
-      SwerveActions.speedOn(wheels, (r2-l2));
+      if(analog1Active && analog2Active){
+        if(yaw >= 0.875 || yaw <= 0.125){ //frontal
+            SwerveWheel fwheels[] = {frontLeftSwerveWheel, frontRightSwerveWheel};
+            SwerveWheel bwheels[] = {backLeftSwerveWheel, frontRightSwerveWheel};
+            SwerveActions.turnOut(fwheels, bwheels, angle1Translade, turnSpeed);
+            SmartDashboard.putString("TurnMode", "TransladeTurnFrontal");
 
-      SmartDashboard.putString("TurnMode", "TransladeTurn");
+        }else if(yaw > 0.125 && yaw <= 0.375){ //right
+            SwerveWheel fwheels[] = {frontRightSwerveWheel, backRightSwerveWheel};
+            SwerveWheel bwheels[] = {frontLeftSwerveWheel, backLeftSwerveWheel};
+            SwerveActions.turnOut(fwheels, bwheels, angle1Translade, turnSpeed);
+            SmartDashboard.putString("TurnMode", "TransladeTurnRight");
+
+        }else if(yaw > 0.375 && yaw <= 0.625){ //backwards
+            SwerveWheel fwheels[] = {backRightSwerveWheel, backLeftSwerveWheel};
+            SwerveWheel bwheels[] = {frontRightSwerveWheel, frontLeftSwerveWheel};
+            SwerveActions.turnOut(fwheels, bwheels, angle1Translade, turnSpeed);
+            SmartDashboard.putString("TurnMode", "TransladeTurnBackward");
+
+        }else if(yaw > 0.625 && yaw < 0.875){ //right
+            SwerveWheel fwheels[] = {backLeftSwerveWheel, frontLeftSwerveWheel};
+            SwerveWheel bwheels[] = {backRightSwerveWheel, frontRightSwerveWheel};
+            SwerveActions.turnOut(fwheels, bwheels, angle1Translade, turnSpeed);
+            SmartDashboard.putString("TurnMode", "TransladeTurnRight");
+        }
+        
+        SwerveActions.speedOn(wheels, (r2-l2));
+
+      }else{
+          SwerveActions.turnOut(frontalWheels, backWheels, angle1Translade, 0);
+
+          SmartDashboard.putString("TurnMode", "Translade");
+          SwerveActions.speedOn(wheels, (r2-l2));
+      }
+      //SwerveActions.transladeTurn(frontalWheels, backWheels, angle1Translade, turnSpeed);
     }
     else if (analog2Active){
       SwerveActions.turnIn(wheels, x2ToAngle);
